@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 from openai import OpenAI
 from pprint import pprint
 from dotenv import load_dotenv
@@ -14,7 +15,6 @@ client = OpenAI(
 
 # Tool functions
 def get_name_for_day(date: str):
-    import requests
     response = requests.get(f"https://svatkyapi.cz/api/day/{date}")
     if response.status_code == 200:
         data = response.json()
