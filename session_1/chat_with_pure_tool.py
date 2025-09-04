@@ -109,16 +109,21 @@ def get_completion_from_messages(messages, model="gpt-4o"):
         print("Second response:", final_answer)
         return final_answer
 
-    return "No relevant function call found."
+    return response_message
 
 # Example usage
 messages = [
     {"role": "system", "content": "You are a helpful AI assistant."},
     {"role": "user", "content": "Kdo měl svátek 28. října 2024?"},
+    #{"role": "user", "content": "Napiš ASDF"},
 ]
 
 response = get_completion_from_messages(messages)
 print("--- Full response: ---")
 pprint(response)
 print("--- Response text: ---")
-print(response.content)
+content = getattr(response, "content", None)
+if content:
+    print(content)
+else:
+    print("No text content in the response")
