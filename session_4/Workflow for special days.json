@@ -1,0 +1,280 @@
+{
+  "name": "Workflow for special days",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1056,
+        160
+      ],
+      "id": "0f3051d9-0075-448b-9232-976db5274a01",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1056,
+        -64
+      ],
+      "id": "6bb56ee3-9e87-4093-905c-d48e23660623",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "619541454775386142",
+          "mode": "list",
+          "cachedResultName": "Kunnik Land",
+          "cachedResultUrl": "https://discord.com/channels/619513245775386142"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1413201905601085661",
+          "mode": "id"
+        },
+        "content": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        240,
+        160
+      ],
+      "id": "d3ae4cdf-2bda-4960-a58a-49e6ed1e9bd4",
+      "name": "Send a message",
+      "webhookId": "ec06dec9-a178-4f97-99e0-fb23458bebe4",
+      "credentials": {
+        "discordBotApi": {
+          "id": "3I2tONtmqjF6lOAJ",
+          "name": "Homebot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Toto je seznam členů rodiny: {{ $json.familyNames }}.\n\nZjisti, jestli má někdo z nich v příštích 7 dnech svátek.\nPokud ano, vytvoř krátkou zprávu pro Discord, která:\n\nstručně zmíní, kdo má svátek (pouze jméno/osoba, nevyjmenovávej všechny ostatní),\n\noznačí uživatele <@210123456355152897> a <@697412345600834828>, aby na to nezapomněli.\n\nPokud v příštím týdnu nemá nikdo svátek, napiš jen jednoduchou zprávu, že žádný svátek není na obzoru.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -144,
+        160
+      ],
+      "id": "43162c1b-e2de-4587-b669-3bc70dc95167",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -144,
+        384
+      ],
+      "id": "a1ac59a2-db0c-48cf-91ba-60a0fbcebe30",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "pYok0v3JIhLQNpAD",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get information about week that starts from today.",
+        "url": "=https://svatkyapi.cz/api/week/{{$now.toISO().split(\"T\")[0]}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        384
+      ],
+      "id": "8b50671a-733f-40bf-a047-273064682b0d",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "family_members",
+          "mode": "list",
+          "cachedResultName": "family_members"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -768,
+        160
+      ],
+      "id": "f7c856ee-a02e-4c28-8d89-f3dc04d33f38",
+      "name": "Select rows from a table",
+      "credentials": {
+        "postgres": {
+          "id": "CZ77pR5B7uskxwy5",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        160
+      ],
+      "id": "12015a34-af81-40ef-8815-57b63169ea5f",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\nreturn {\n  familyNames: $input.first().json.data.map(item => item.name).join(\", \")\n}\n  \n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        160
+      ],
+      "id": "5ae831dd-593f-41eb-a2e5-2f05899bcbef",
+      "name": "Code"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        []
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Prague",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "31cec839-52ee-443d-a1d6-3324a7e156d5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a331dfca4da4ec38ff2888cbbb7a935ef5df2348bb5b262155c4a7a749a04a26"
+  },
+  "id": "xZ01YxX8X6TDFlC6",
+  "tags": []
+}
